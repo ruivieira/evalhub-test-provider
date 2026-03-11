@@ -25,6 +25,35 @@ from evalhub.models.api import EvaluationResult
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path("/data")
+
+# Static dummy metrics returned on every run (for testing/demo without real data).
+STATIC_DUMMY_METRICS: list[EvaluationResult] = [
+    EvaluationResult(
+        metric_name="accuracy",
+        metric_value=0.85,
+        metric_type="float",
+        num_samples=100,
+        metadata={"description": "dummy static metric"},
+    ),
+    EvaluationResult(
+        metric_name="f1_score",
+        metric_value=0.82,
+        metric_type="float",
+        num_samples=100,
+    ),
+    EvaluationResult(
+        metric_name="latency_p99_ms",
+        metric_value=150,
+        metric_type="int",
+        num_samples=100,
+    ),
+    EvaluationResult(
+        metric_name="throughput",
+        metric_value=42.5,
+        metric_type="float",
+        num_samples=1,
+    ),
+]
 TEST_DATA_DIR = Path("/test_data")
 _DATA_SUFFIXES = (".json", ".jsonl")
 
@@ -257,8 +286,9 @@ class TestEvalHubAdapter(FrameworkAdapter):
                     ),
                 )
             )
-            # Compute simple metrics from the dataframe (numeric columns only)
-            results_list: list[EvaluationResult] = []
+            # Start with static dummy metrics (always returned)
+            results_list: list[EvaluationResult] = list(STATIC_DUMMY_METRICS)
+            # Add metrics derived from the dataframe (numeric columns only)
             numeric = df.select_dtypes(include=["number"])
             if not numeric.empty:
                 for col in numeric.columns:
